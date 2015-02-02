@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
-using AsciiFileDetector;
 
-namespace AsciFileDetector
+namespace DirectoryFilesValidationGui
 {
 	static class Program
 	{

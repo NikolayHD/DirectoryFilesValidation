@@ -1,4 +1,4 @@
-﻿namespace AsciiFileDetector
+﻿namespace DirectoryFilesValidationGui
 {
 	partial class FormApp
 	{
@@ -119,7 +119,6 @@
 			// notifyIcon1
 			// 
 			this.notifyIcon1.ContextMenuStrip = this.contextMenuStrip1;
-			this.notifyIcon1.Text = "Ansii files detector";
 			this.notifyIcon1.Visible = true;
 			this.notifyIcon1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseClick);
 			// 
@@ -207,7 +206,6 @@
 			this.Name = "FormApp";
 			this.ShowInTaskbar = false;
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
-			this.Load += new System.EventHandler(this.Form1_Load);
 			this.contextMenuStrip1.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();

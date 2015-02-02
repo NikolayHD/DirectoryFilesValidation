@@ -5,10 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using DirectoryFilesValidationGui;
 using DirectoryScanner;
 
-namespace AsciiFileDetector
+namespace DirectoryFilesValidationGui
 {
 	public partial class FormApp : Form
 	{
@@ -26,17 +25,21 @@ namespace AsciiFileDetector
 			this.ShowInTaskbar = false;
 			_lastState = this.WindowState;
 
+			Initialize();
+
+			UpdateFormData();
+
 			_timer = new Timer
 			{
-				Interval = 5000,
+				Interval = 1000,
 			};
 
-			_timer.Tick += (x, y) => TimerTick();
+			_timer.Tick += (x, y) => UpdateFormData();
 
 			_timer.Start();
 		}
 
-		private void TimerTick()
+		private void UpdateFormData()
 		{
 			RefreshTitle();
 			RefreshList();
@@ -65,6 +68,10 @@ namespace AsciiFileDetector
 			if (!errorsFound)
 				text += " clean";
 
+			var ignoredFiles = GetIgnoredFiles();
+			if (ignoredFiles.Count > 0)
+				text += ", ignoring " + ignoredFiles.Count + " file(s)";
+
 			this.notifyIcon1.Text = this.Text = text;
 
 			this.notifyIcon1.Icon = this.Icon =
@@ -80,6 +87,16 @@ namespace AsciiFileDetector
 				.ToList();
 
 			return badFiles;
+		}
+
+		private HashSet<string> GetIgnoredFiles()
+		{
+			HashSet<string> result = new HashSet<string>(_ignoredFiles);
+			result.IntersectWith(
+				_scanner.CheckerIdList
+					.SelectMany(checkerId => _scanner.GetFilesWithErrors(checkerId)));
+			
+			return result;
 		}
 
 		private void RefreshList()
@@ -107,6 +124,15 @@ namespace AsciiFileDetector
 				}
 			}
 
+			var ignoredFiles = GetIgnoredFiles();
+			if (ignoredFiles.Count > 0)
+			{
+				result.AppendLine("Ignored files:");
+
+				foreach (var ignoredFile in ignoredFiles)
+					result.AppendLine(ignoredFile);
+			}
+
 			var text = result.ToString();
 
 			var selectionStart = this.richTextBox1.SelectionStart;
@@ -121,7 +147,7 @@ namespace AsciiFileDetector
 			}
 		}
 
-		private void Form1_Load(object sender, EventArgs e)
+		private void Initialize()
 		{
 			var config = GetConfig();
 			_ignoredFiles.Clear();
@@ -130,7 +156,7 @@ namespace AsciiFileDetector
 				_ignoredFiles.Add(ignoredFile);
 
 			this.toolTip1.ToolTipTitle = "Ignored files list:";
-			this.toolTip1.SetToolTip(this.buttonResetIgnore, string.Join(Environment.NewLine, _ignoredFiles.OrderBy(f=>f)));
+			this.toolTip1.SetToolTip(this.buttonResetIgnore, string.Join(Environment.NewLine, _ignoredFiles.OrderBy(f => f)));
 
 			RestartMonitor();
 		}
