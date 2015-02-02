@@ -11,7 +11,7 @@ namespace DirectoryFilesValidationGui
 {
 	public partial class FormApp : Form
 	{
-		private int _scippedListRefreshes = 0;
+		private int _scippedListRefreshes;
 		private Scanner _scanner;
 		private FormWindowState _lastState;
 		private readonly Timer _updateFormDataTimer;

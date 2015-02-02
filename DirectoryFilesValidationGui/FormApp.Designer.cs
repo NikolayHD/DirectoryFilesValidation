@@ -39,7 +39,6 @@
 			this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.scanToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.buttonOpenCsproj = new System.Windows.Forms.Button();
 			this.buttonFixCsproj = new System.Windows.Forms.Button();
 			this.buttonIgnore = new System.Windows.Forms.Button();
@@ -124,24 +123,16 @@
 			// contextMenuStrip1
 			// 
 			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.exitToolStripMenuItem,
-            this.scanToolStripMenuItem});
+            this.exitToolStripMenuItem});
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(100, 48);
+			this.contextMenuStrip1.Size = new System.Drawing.Size(93, 26);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(99, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(92, 22);
 			this.exitToolStripMenuItem.Text = "Exit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
-			// 
-			// scanToolStripMenuItem
-			// 
-			this.scanToolStripMenuItem.Name = "scanToolStripMenuItem";
-			this.scanToolStripMenuItem.Size = new System.Drawing.Size(99, 22);
-			this.scanToolStripMenuItem.Text = "Scan";
-			this.scanToolStripMenuItem.Click += new System.EventHandler(this.buttonApplyConfig_Click);
 			// 
 			// buttonOpenCsproj
 			// 
@@ -167,6 +158,7 @@
 			// 
 			// buttonIgnore
 			// 
+			this.buttonIgnore.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.buttonIgnore.Location = new System.Drawing.Point(12, 473);
 			this.buttonIgnore.Name = "buttonIgnore";
 			this.buttonIgnore.Size = new System.Drawing.Size(126, 23);
@@ -177,6 +169,7 @@
 			// 
 			// buttonResetIgnore
 			// 
+			this.buttonResetIgnore.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.buttonResetIgnore.Location = new System.Drawing.Point(144, 473);
 			this.buttonResetIgnore.Name = "buttonResetIgnore";
 			this.buttonResetIgnore.Size = new System.Drawing.Size(127, 23);
@@ -225,7 +218,6 @@
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 		private System.Windows.Forms.Button buttonOpenCsproj;
 		private System.Windows.Forms.Button buttonFixCsproj;
-		private System.Windows.Forms.ToolStripMenuItem scanToolStripMenuItem;
 		private System.Windows.Forms.Button buttonIgnore;
 		private System.Windows.Forms.Button buttonResetIgnore;
 	}

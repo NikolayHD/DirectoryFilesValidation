@@ -145,24 +145,20 @@ namespace DirectoryScanner
 			{
 				while (!_stopProcessing)
 				{
-					if (_filesQueue.Count > 0)
-					{
-						_processing = true;
-						processFilesQueue();
-						_processing = false;
-					}
-					await Task.Delay(TimeSpan.FromSeconds(1));
-				}
-			});
-
-			Task.Run(async () =>
-			{
-				while (!_stopProcessing)
-				{
 					_scanning = true;
 					findMatchingFiles();
 					_scanning = false;
 					
+					if (_stopProcessing)
+						break;
+
+					_processing = true;
+					processFilesQueue();
+					_processing = false;
+
+					if (_stopProcessing)
+						break;
+
 					await Task.Delay(scanInterval);
 				}
 			});
