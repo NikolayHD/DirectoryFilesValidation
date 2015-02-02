@@ -20,8 +20,10 @@ namespace DirectoryScanner
 		private readonly string _pattern;
 
 		private bool _scanning;
+		private bool _processing;
 
 		private bool _stopProcessing;
+		
 
 		private void AddErrorList(string checkerId, string file, IReadOnlyCollection<string> errorList)
 		{
@@ -104,6 +106,11 @@ namespace DirectoryScanner
 			get { return _scanning; }
 		}
 
+		public bool Processing
+		{
+			get { return _processing; }
+		}
+
 		public Scanner(string directory, string pattern, params IFileChecker[] fileCheckers)
 		{
 			_directory = directory;
@@ -132,25 +139,36 @@ namespace DirectoryScanner
 			}
 		}
 
-		public void Start()
+		public void Start(int scanInterval)
 		{
 			Task.Run(async () =>
 			{
-				_scanning = true;
-
-				scan();
-
-				_scanning = false;
-
 				while (!_stopProcessing)
 				{
-					processQueue();
+					if (_filesQueue.Count > 0)
+					{
+						_processing = true;
+						processFilesQueue();
+						_processing = false;
+					}
 					await Task.Delay(TimeSpan.FromSeconds(1));
+				}
+			});
+
+			Task.Run(async () =>
+			{
+				while (!_stopProcessing)
+				{
+					_scanning = true;
+					findMatchingFiles();
+					_scanning = false;
+					
+					await Task.Delay(scanInterval);
 				}
 			});
 		}
 
-		private void scan()
+		private void findMatchingFiles()
 		{
 			var patternParts = _pattern.Split('|');
 
@@ -163,13 +181,13 @@ namespace DirectoryScanner
 			}
 		}
 
-		public void Scan()
+		public void FindErrors()
 		{
-			scan();
-			processQueue();
+			findMatchingFiles();
+			processFilesQueue();
 		}
 
-		private void processQueue()
+		private void processFilesQueue()
 		{
 			string nextFile;
 
@@ -193,14 +211,19 @@ namespace DirectoryScanner
 			_stopProcessing = true;
 		}
 
-		public void FixFoundErrors()
+		public void FixFoundErrors(HashSet<string> ignoredFiles = null)
 		{
+			ignoredFiles = ignoredFiles ?? new HashSet<string>();
+
 			Task.Run(() =>
 			{
 				foreach (var checkerId in CheckerIdList)
 				{
 					foreach (var file in this.GetFilesWithErrors(checkerId))
 					{
+						if (ignoredFiles.Contains(file))
+							continue;
+
 						var modified = _checkersById[checkerId].FixErrors(file);
 
 						RemoveErrorList(checkerId, file);

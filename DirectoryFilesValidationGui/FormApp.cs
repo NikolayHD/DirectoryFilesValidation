@@ -11,9 +11,10 @@ namespace DirectoryFilesValidationGui
 {
 	public partial class FormApp : Form
 	{
+		private int _scippedListRefreshes = 0;
 		private Scanner _scanner;
 		private FormWindowState _lastState;
-		private readonly Timer _timer;
+		private readonly Timer _updateFormDataTimer;
 		
 		private readonly HashSet<string> _ignoredFiles = new HashSet<string>(); 
 
@@ -29,14 +30,9 @@ namespace DirectoryFilesValidationGui
 
 			UpdateFormData();
 
-			_timer = new Timer
-			{
-				Interval = 1000,
-			};
-
-			_timer.Tick += (x, y) => UpdateFormData();
-
-			_timer.Start();
+			_updateFormDataTimer = new Timer { Interval = 1000 };
+			_updateFormDataTimer.Tick += (x, y) => UpdateFormData();
+			_updateFormDataTimer.Start();
 		}
 
 		private void UpdateFormData()
@@ -50,7 +46,10 @@ namespace DirectoryFilesValidationGui
 			string text = string.Empty;
 
 			if (_scanner.Scanning)
-				text = "[scanning...] ";
+				text += "scanning... ";
+
+			if (_scanner.Processing)
+				text += "analyzing... ";
 
 			bool errorsFound = false;
 
@@ -66,7 +65,7 @@ namespace DirectoryFilesValidationGui
 			}
 
 			if (!errorsFound)
-				text += " clean";
+				text += "clean";
 
 			var ignoredFiles = GetIgnoredFiles();
 			if (ignoredFiles.Count > 0)
@@ -101,6 +100,15 @@ namespace DirectoryFilesValidationGui
 
 		private void RefreshList()
 		{
+			if (this.richTextBox1.Focused)
+			{
+				_scippedListRefreshes++;
+				if (_scippedListRefreshes < 15)
+					return;
+			}
+
+			_scippedListRefreshes = 0;
+
 			var result = new StringBuilder();
 
 			foreach (var checkerId in _scanner.CheckerIdList)
@@ -154,10 +162,7 @@ namespace DirectoryFilesValidationGui
 
 			foreach (var ignoredFile in config.AppSettings.Settings["Ignore"].Value.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries))
 				_ignoredFiles.Add(ignoredFile);
-
-			this.toolTip1.ToolTipTitle = "Ignored files list:";
-			this.toolTip1.SetToolTip(this.buttonResetIgnore, string.Join(Environment.NewLine, _ignoredFiles.OrderBy(f => f)));
-
+			
 			RestartMonitor();
 		}
 
@@ -174,7 +179,7 @@ namespace DirectoryFilesValidationGui
 			this.textBoxPattern.Text = pattern;
 
 			_scanner = new Scanner(directory, pattern, new CsprojChecker(), new EncodingChecker());
-			_scanner.Start();
+			_scanner.Start(60000);
 		}
 
 		private Configuration GetConfig()
@@ -219,7 +224,7 @@ namespace DirectoryFilesValidationGui
 				return;
 			}
 
-			_timer.Stop();
+			_updateFormDataTimer.Stop();
 			CloseMonitor();
 		}
 
@@ -278,13 +283,11 @@ namespace DirectoryFilesValidationGui
 
 		private void buttonFixErrors_Click(object sender, EventArgs e)
 		{
-			_scanner.FixFoundErrors();
+			_scanner.FixFoundErrors(_ignoredFiles);
 		}
 
 		private void buttonIgnore_Click(object sender, EventArgs e)
 		{
-			var config = GetConfig();
-
 			var files = this.richTextBox1.SelectedText.Split('\n');
 			foreach (var file in files)
 			{
@@ -295,25 +298,30 @@ namespace DirectoryFilesValidationGui
 				_ignoredFiles.Add(path);
 			}
 
-			config.AppSettings.Settings.Remove("Ignore");
-			config.AppSettings.Settings.Add("Ignore", string.Join(";", _ignoredFiles));
-
-			config.Save(ConfigurationSaveMode.Full);
-
-			this.toolTip1.SetToolTip(this.buttonResetIgnore, string.Join(Environment.NewLine, _ignoredFiles.OrderBy(f=>f)));
+			SaveIgnoredFilesToConfig();
 		}
 
 		private void buttonResetIgnore_Click(object sender, EventArgs e)
 		{
-			_ignoredFiles.Clear();
+			var files = this.richTextBox1.SelectedText.Split('\n');
+			foreach (var file in files)
+			{
+				if (file.StartsWith("\t"))
+					continue;
+				
+				var path = file.Trim();
+				_ignoredFiles.Remove(path);
+			}
 			
+			SaveIgnoredFilesToConfig();
+		}
+
+		private void SaveIgnoredFilesToConfig()
+		{
 			var config = GetConfig();
 			config.AppSettings.Settings.Remove("Ignore");
-			config.AppSettings.Settings.Add("Ignore", string.Empty);
-
+			config.AppSettings.Settings.Add("Ignore", string.Join(";", _ignoredFiles));
 			config.Save(ConfigurationSaveMode.Full);
-
-			this.toolTip1.SetToolTip(this.buttonResetIgnore, string.Empty);
 		}
 	}
 }

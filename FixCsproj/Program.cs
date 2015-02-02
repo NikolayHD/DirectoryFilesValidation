@@ -22,7 +22,7 @@ namespace FixCsproj
 			
 			if (parsedArgs.ContainsKey("-findOnly"))
 			{
-				scanner.Scan();
+				scanner.FindErrors();
 				return scanner.ErrorsFound ? 1 : 0;
 			}
 

@@ -44,7 +44,6 @@
 			this.buttonFixCsproj = new System.Windows.Forms.Button();
 			this.buttonIgnore = new System.Windows.Forms.Button();
 			this.buttonResetIgnore = new System.Windows.Forms.Button();
-			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.contextMenuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -67,7 +66,7 @@
 			this.textBoxDir.Location = new System.Drawing.Point(70, 13);
 			this.textBoxDir.Name = "textBoxDir";
 			this.textBoxDir.Size = new System.Drawing.Size(521, 20);
-			this.textBoxDir.TabIndex = 4;
+			this.textBoxDir.TabIndex = 0;
 			// 
 			// textBoxPattern
 			// 
@@ -76,7 +75,7 @@
 			this.textBoxPattern.Location = new System.Drawing.Point(70, 39);
 			this.textBoxPattern.Name = "textBoxPattern";
 			this.textBoxPattern.Size = new System.Drawing.Size(520, 20);
-			this.textBoxPattern.TabIndex = 5;
+			this.textBoxPattern.TabIndex = 1;
 			// 
 			// label1
 			// 
@@ -111,7 +110,7 @@
 			this.buttonApplyConfig.Location = new System.Drawing.Point(512, 65);
 			this.buttonApplyConfig.Name = "buttonApplyConfig";
 			this.buttonApplyConfig.Size = new System.Drawing.Size(79, 23);
-			this.buttonApplyConfig.TabIndex = 9;
+			this.buttonApplyConfig.TabIndex = 2;
 			this.buttonApplyConfig.Text = "Scan";
 			this.buttonApplyConfig.UseVisualStyleBackColor = true;
 			this.buttonApplyConfig.Click += new System.EventHandler(this.buttonApplyConfig_Click);
@@ -150,7 +149,7 @@
 			this.buttonOpenCsproj.Location = new System.Drawing.Point(466, 473);
 			this.buttonOpenCsproj.Name = "buttonOpenCsproj";
 			this.buttonOpenCsproj.Size = new System.Drawing.Size(124, 23);
-			this.buttonOpenCsproj.TabIndex = 10;
+			this.buttonOpenCsproj.TabIndex = 7;
 			this.buttonOpenCsproj.Text = "Open selected files";
 			this.buttonOpenCsproj.UseVisualStyleBackColor = true;
 			this.buttonOpenCsproj.Click += new System.EventHandler(this.buttonOpenFiles_Click);
@@ -161,7 +160,7 @@
 			this.buttonFixCsproj.Location = new System.Drawing.Point(336, 473);
 			this.buttonFixCsproj.Name = "buttonFixCsproj";
 			this.buttonFixCsproj.Size = new System.Drawing.Size(124, 23);
-			this.buttonFixCsproj.TabIndex = 11;
+			this.buttonFixCsproj.TabIndex = 6;
 			this.buttonFixCsproj.Text = "Fix all";
 			this.buttonFixCsproj.UseVisualStyleBackColor = true;
 			this.buttonFixCsproj.Click += new System.EventHandler(this.buttonFixErrors_Click);
@@ -171,7 +170,7 @@
 			this.buttonIgnore.Location = new System.Drawing.Point(12, 473);
 			this.buttonIgnore.Name = "buttonIgnore";
 			this.buttonIgnore.Size = new System.Drawing.Size(126, 23);
-			this.buttonIgnore.TabIndex = 12;
+			this.buttonIgnore.TabIndex = 4;
 			this.buttonIgnore.Text = "Ignore selected files";
 			this.buttonIgnore.UseVisualStyleBackColor = true;
 			this.buttonIgnore.Click += new System.EventHandler(this.buttonIgnore_Click);
@@ -180,9 +179,9 @@
 			// 
 			this.buttonResetIgnore.Location = new System.Drawing.Point(144, 473);
 			this.buttonResetIgnore.Name = "buttonResetIgnore";
-			this.buttonResetIgnore.Size = new System.Drawing.Size(75, 23);
-			this.buttonResetIgnore.TabIndex = 13;
-			this.buttonResetIgnore.Text = "Reset ignore";
+			this.buttonResetIgnore.Size = new System.Drawing.Size(127, 23);
+			this.buttonResetIgnore.TabIndex = 5;
+			this.buttonResetIgnore.Text = "Unignore selected files";
 			this.buttonResetIgnore.UseVisualStyleBackColor = true;
 			this.buttonResetIgnore.Click += new System.EventHandler(this.buttonResetIgnore_Click);
 			// 
@@ -229,7 +228,6 @@
 		private System.Windows.Forms.ToolStripMenuItem scanToolStripMenuItem;
 		private System.Windows.Forms.Button buttonIgnore;
 		private System.Windows.Forms.Button buttonResetIgnore;
-		private System.Windows.Forms.ToolTip toolTip1;
 	}
 }
 
