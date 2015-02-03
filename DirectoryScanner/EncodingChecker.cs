@@ -15,12 +15,12 @@ namespace DirectoryScanner
 
 		private static readonly IReadOnlyCollection<string> IsAscii = new[] {"file is ascii encoded"};
 
-		public IReadOnlyCollection<string> GetErrors(string file)
+		public IReadOnlyCollection<string> GetErrors(string file, HashSet<string> solutionFiles)
 		{
 			return isAscii(file) ? IsAscii : EmptyCollection;
 		}
 
-		public bool FixErrors(string file)
+		public bool FixErrors(string file, HashSet<string> solutionFiles)
 		{
 			return convertToUtf8(file);
 		}

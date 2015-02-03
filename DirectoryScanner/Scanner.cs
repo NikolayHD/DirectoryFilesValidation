@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -9,10 +8,14 @@ namespace DirectoryScanner
 {
 	public class Scanner
 	{
+		const string SolutionFileExtension = ".sln";
 		private static readonly IReadOnlyCollection<string> EmptyCollection = new ReadOnlyCollection<string>(new List<string>(0));
 		private static readonly object SyncRoot = new object();
 
 		private readonly HashSet<string> _filesQueue = new HashSet<string>();
+
+		private readonly HashSet<string> _solutionFiles = new HashSet<string>();
+
 		private readonly Dictionary<string, IFileChecker> _checkersById = new Dictionary<string, IFileChecker>();
 		private readonly Dictionary<string, Dictionary<string, IReadOnlyCollection<string>>> _errorsByCheckerAndFile = new Dictionary<string, Dictionary<string, IReadOnlyCollection<string>>>();
 
@@ -23,7 +26,7 @@ namespace DirectoryScanner
 		private bool _processing;
 
 		private bool _stopProcessing;
-		
+
 
 		private void AddErrorList(string checkerId, string file, IReadOnlyCollection<string> errorList)
 		{
@@ -43,21 +46,20 @@ namespace DirectoryScanner
 
 		private void RemoveErrorList(string checkerId, string file)
 		{
-			Dictionary<string, IReadOnlyCollection<string>> errorsByFile;
+			lock (SyncRoot)
+			{
+				Dictionary<string, IReadOnlyCollection<string>> errorsByFile;
 
-			if (!_errorsByCheckerAndFile.TryGetValue(checkerId, out errorsByFile))
-				return;
+				if (!_errorsByCheckerAndFile.TryGetValue(checkerId, out errorsByFile))
+					return;
 
-			errorsByFile.Remove(file);
+				errorsByFile.Remove(file);
+			}
 		}
 
 		public IReadOnlyCollection<string> CheckerIdList
 		{
-			get
-			{
-				lock (SyncRoot)
-					return _checkersById.Keys.ToList();
-			}
+			get { return _checkersById.Keys.ToList(); }
 		}
 
 		public IReadOnlyCollection<string> GetFilesWithErrors(string checkerId)
@@ -145,10 +147,12 @@ namespace DirectoryScanner
 			{
 				while (!_stopProcessing)
 				{
+					ResetFoundFilesAndErrors();
+
 					_scanning = true;
 					findMatchingFiles();
 					_scanning = false;
-					
+
 					if (_stopProcessing)
 						break;
 
@@ -164,16 +168,40 @@ namespace DirectoryScanner
 			});
 		}
 
+		private void ResetFoundFilesAndErrors()
+		{
+			lock (SyncRoot)
+			{
+				foreach (var checkerId in _checkersById.Keys)
+				{
+					Dictionary<string, IReadOnlyCollection<string>> errorsByFile;
+					if (_errorsByCheckerAndFile.TryGetValue(checkerId, out errorsByFile))
+						errorsByFile.Clear();
+				}
+
+				_filesQueue.Clear();
+
+				_solutionFiles.Clear();
+			}
+		}
+
 		private void findMatchingFiles()
 		{
-			var patternParts = _pattern.Split('|');
+			IEnumerable<string> patternParts = _pattern.Split('|');
+			
+			if (!patternParts.Contains("*" + SolutionFileExtension))
+				patternParts = patternParts.Concat(new[] {"*" + SolutionFileExtension});
 
 			foreach (var patternPart in patternParts)
 			{
 				var files = Directory.GetFiles(_directory, patternPart, SearchOption.AllDirectories);
 
 				foreach (var file in files)
+				{
 					AddFileToQueue(file);
+					if (file.EndsWith(SolutionFileExtension))
+						_solutionFiles.Add(file);
+				}
 			}
 		}
 
@@ -194,7 +222,7 @@ namespace DirectoryScanner
 				if (nextFile != null)
 					foreach (var pair in _checkersById)
 					{
-						var errors = pair.Value.GetErrors(nextFile);
+						var errors = pair.Value.GetErrors(nextFile, _solutionFiles);
 
 						if (errors.Count > 0)
 							AddErrorList(pair.Key, nextFile, errors);
@@ -220,7 +248,7 @@ namespace DirectoryScanner
 						if (ignoredFiles.Contains(file))
 							continue;
 
-						var modified = _checkersById[checkerId].FixErrors(file);
+						var modified = _checkersById[checkerId].FixErrors(file, _solutionFiles);
 
 						RemoveErrorList(checkerId, file);
 
@@ -233,10 +261,15 @@ namespace DirectoryScanner
 
 		public void ScanAndFixErrrors()
 		{
+			ResetFoundFilesAndErrors();
+
+			foreach (var file in Directory.GetFiles(_directory, "*." + SolutionFileExtension, SearchOption.AllDirectories))
+				_solutionFiles.Add(file);
+
 			foreach (var patternPart in _pattern.Split('|'))
 				foreach (var file in Directory.GetFiles(_directory, patternPart, SearchOption.AllDirectories))
 					foreach (var pair in _checkersById)
-						pair.Value.FixErrors(file);
+						pair.Value.FixErrors(file, _solutionFiles);
 		}
 	}
 }

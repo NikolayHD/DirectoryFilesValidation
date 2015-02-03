@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
@@ -13,10 +15,10 @@ namespace DirectoryScanner
 		private static readonly IReadOnlyCollection<string> EmptyCollection = new String[0];
 
 		private const StringComparison StrComp = StringComparison.InvariantCultureIgnoreCase;
-		
+
 		private static readonly object SyncRoot = new object();
-		
-		public IReadOnlyCollection<string> GetErrors(string file)
+
+		public IReadOnlyCollection<string> GetErrors(string file, HashSet<string> solutionFiles)
 		{
 			if (!file.EndsWith(".csproj"))
 				return EmptyCollection;
@@ -26,18 +28,18 @@ namespace DirectoryScanner
 			lock (SyncRoot)
 			{
 				Project project;
-				
+
 				try
 				{
-					project = GetProject(file);
+					project = GetProject(file, solutionFiles);
 				}
-				catch (InvalidProjectFileException)
+				catch (InvalidProjectFileException ex)
 				{
-					return EmptyCollection;
+					return new[] { ex.Message };
 				}
 
 				var references = project.GetItems("Reference");
-				
+
 				foreach (var reference in references)
 				{
 					string library = reference.EvaluatedInclude;
@@ -77,7 +79,7 @@ namespace DirectoryScanner
 			}
 		}
 
-		public bool FixErrors(string file)
+		public bool FixErrors(string file, HashSet<string> solutionFiles)
 		{
 			if (!file.EndsWith(".csproj"))
 				return false;
@@ -87,9 +89,9 @@ namespace DirectoryScanner
 			lock (SyncRoot)
 				try
 				{
-					Project project = GetProject(file);
+					Project project = GetProject(file, solutionFiles);
 					var references = project.GetItems("Reference");
-					
+
 					foreach (var reference in references)
 					{
 						string library = reference.EvaluatedInclude;
@@ -134,7 +136,7 @@ namespace DirectoryScanner
 			return false;
 		}
 
-		private Project GetProject(string path)
+		private Project GetProject(string path, HashSet<string> solutionFiles)
 		{
 			if (_projects.Contains(path))
 			{
@@ -142,11 +144,35 @@ namespace DirectoryScanner
 				// http://codeyourself.net/microsoft-build-evaluation-project-loading-oddities/
 				ProjectCollection.GlobalProjectCollection.UnloadAllProjects();
 			}
-			
-			var project = new Project(path);
+
+			string solutionDir = FindSolutionDir(path, solutionFiles);
+
+			Project project;
+
+			project = solutionDir != null 
+				? new Project(path, new Dictionary<string, string> { { "SolutionDir", solutionDir } }, null) 
+				: new Project(path);
+
 			_projects.Add(path);
 
 			return project;
+		}
+
+		private string FindSolutionDir(string path, HashSet<string> solutionFiles)
+		{
+			string currentDir = Path.GetDirectoryName(path);
+
+			var solutionDirs = new HashSet<string>(solutionFiles.Select(Path.GetDirectoryName));
+
+			while (currentDir != null)
+			{
+				if (solutionDirs.Contains(currentDir))
+					return currentDir;
+
+				currentDir = Path.GetDirectoryName(currentDir);
+			}
+
+			return null;
 		}
 
 		public string CheckerId { get { return "csproj references"; } }

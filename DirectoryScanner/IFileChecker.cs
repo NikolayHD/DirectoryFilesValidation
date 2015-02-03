@@ -4,9 +4,9 @@ namespace DirectoryScanner
 {
 	public interface IFileChecker
 	{
-		IReadOnlyCollection<string> GetErrors(string file);
+		IReadOnlyCollection<string> GetErrors(string file, HashSet<string> solutionFiles);
 
-		bool FixErrors(string file);
+		bool FixErrors(string file, HashSet<string> solutionFiles);
 
 		string CheckerId { get; }
 	}

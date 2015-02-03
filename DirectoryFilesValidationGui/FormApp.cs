@@ -107,6 +107,9 @@ namespace DirectoryFilesValidationGui
 					return;
 			}
 
+			if (_scanner.Scanning || _scanner.Processing)
+				return;
+
 			_scippedListRefreshes = 0;
 
 			var result = new StringBuilder();
