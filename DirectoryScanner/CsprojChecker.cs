@@ -175,6 +175,6 @@ namespace DirectoryScanner
 			return null;
 		}
 
-		public string CheckerId { get { return "csproj references"; } }
+		public string CheckerId { get { return "csproj"; } }
 	}
 }

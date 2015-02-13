@@ -60,7 +60,7 @@ namespace DirectoryFilesValidationGui
 				if (badFiles.Count > 0)
 				{
 					errorsFound = true;
-					text += string.Format(" {0}: {1} file(s)", checkerId, badFiles.Count);
+					text += string.Format(" {0}: {1} files", checkerId, badFiles.Count);
 				}
 			}
 
@@ -71,7 +71,9 @@ namespace DirectoryFilesValidationGui
 			if (ignoredFiles.Count > 0)
 				text += ", ignoring " + ignoredFiles.Count + " file(s)";
 
-			this.notifyIcon1.Text = this.Text = text;
+			this.Text = text;
+
+			this.notifyIcon1.Text = text.Substring(0, Math.Min(text.Length, 64));
 
 			this.notifyIcon1.Icon = this.Icon =
 				errorsFound

@@ -80,6 +80,6 @@ namespace DirectoryScanner
 			return true;
 		}
 
-		public string CheckerId { get { return "ascii encoding"; } }
+		public string CheckerId { get { return "encoding"; } }
 	}
 }
