@@ -43,6 +43,7 @@
 			this.buttonFixCsproj = new System.Windows.Forms.Button();
 			this.buttonIgnore = new System.Windows.Forms.Button();
 			this.buttonResetIgnore = new System.Windows.Forms.Button();
+			this.panelCheckers = new System.Windows.Forms.FlowLayoutPanel();
 			this.contextMenuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -178,12 +179,21 @@
 			this.buttonResetIgnore.UseVisualStyleBackColor = true;
 			this.buttonResetIgnore.Click += new System.EventHandler(this.buttonResetIgnore_Click);
 			// 
+			// panelCheckers
+			// 
+			this.panelCheckers.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
+			this.panelCheckers.Location = new System.Drawing.Point(12, 65);
+			this.panelCheckers.Name = "panelCheckers";
+			this.panelCheckers.Size = new System.Drawing.Size(494, 41);
+			this.panelCheckers.TabIndex = 9;
+			// 
 			// FormApp
 			// 
 			this.AcceptButton = this.buttonApplyConfig;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(603, 508);
+			this.Controls.Add(this.panelCheckers);
 			this.Controls.Add(this.buttonResetIgnore);
 			this.Controls.Add(this.buttonIgnore);
 			this.Controls.Add(this.buttonFixCsproj);
@@ -220,6 +230,7 @@
 		private System.Windows.Forms.Button buttonFixCsproj;
 		private System.Windows.Forms.Button buttonIgnore;
 		private System.Windows.Forms.Button buttonResetIgnore;
+		private System.Windows.Forms.FlowLayoutPanel panelCheckers;
 	}
 }
 

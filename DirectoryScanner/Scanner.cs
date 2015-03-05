@@ -113,7 +113,7 @@ namespace DirectoryScanner
 			get { return _processing; }
 		}
 
-		public Scanner(string directory, string pattern, params IFileChecker[] fileCheckers)
+		public Scanner(string directory, string pattern, IEnumerable<IFileChecker> fileCheckers)
 		{
 			_directory = directory;
 			_pattern = pattern;

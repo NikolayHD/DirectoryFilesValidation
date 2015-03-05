@@ -18,7 +18,7 @@ namespace FixCsproj
 
 			var directory = parsedArgs["-d"];
 
-			var scanner = new Scanner(directory, "*.csproj", new CsprojChecker());
+			var scanner = new Scanner(directory, "*.csproj", new[] {new CsprojChecker()});
 			
 			if (parsedArgs.ContainsKey("-findOnly"))
 			{

@@ -16,7 +16,17 @@ namespace DirectoryFilesValidationGui
 		private FormWindowState _lastState;
 		private readonly Timer _updateFormDataTimer;
 		
-		private readonly HashSet<string> _ignoredFiles = new HashSet<string>(); 
+		private readonly HashSet<string> _ignoredFiles = new HashSet<string>();
+
+		private readonly Dictionary<string, IFileChecker> _availableCheckers = 
+			new IFileChecker[]
+			{
+				new CsprojChecker(), 
+				new EncodingChecker()
+			}.ToDictionary(c => c.CheckerId);
+
+		private HashSet<string> _enabledCheckers;
+
 
 		public FormApp()
 		{
@@ -33,6 +43,7 @@ namespace DirectoryFilesValidationGui
 			_updateFormDataTimer = new Timer { Interval = 1000 };
 			_updateFormDataTimer.Tick += (x, y) => UpdateFormData();
 			_updateFormDataTimer.Start();
+
 		}
 
 		private void UpdateFormData()
@@ -55,6 +66,9 @@ namespace DirectoryFilesValidationGui
 
 			foreach (var checkerId in _scanner.CheckerIdList)
 			{
+				if (!_enabledCheckers.Contains(checkerId))
+					continue;
+
 				var badFiles = GetBadFiles(checkerId);
 
 				if (badFiles.Count > 0)
@@ -118,6 +132,9 @@ namespace DirectoryFilesValidationGui
 
 			foreach (var checkerId in _scanner.CheckerIdList)
 			{
+				if (!_enabledCheckers.Contains(checkerId))
+					continue;
+
 				var badFiles = GetBadFiles(checkerId);
 
 				foreach (var file in badFiles)
@@ -163,11 +180,35 @@ namespace DirectoryFilesValidationGui
 		private void Initialize()
 		{
 			var config = GetConfig();
+			
 			_ignoredFiles.Clear();
 
 			foreach (var ignoredFile in config.AppSettings.Settings["Ignore"].Value.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries))
 				_ignoredFiles.Add(ignoredFile);
 			
+
+			_enabledCheckers = new HashSet<string>(config.AppSettings.Settings["EnabledCheckers"].Value.Split('|'));
+			foreach (var checkerId in _availableCheckers.Keys)
+			{
+				var checkBox = new CheckBox
+				{
+					Checked = _enabledCheckers.Contains(checkerId),
+					Text = checkerId
+				};
+
+				panelCheckers.Controls.Add(checkBox);
+				checkBox.CheckStateChanged += (sender, args) =>
+				{
+					var checkbox = (CheckBox) sender;
+					if (checkbox.Checked)
+						_enabledCheckers.Add(checkBox.Text);
+					else
+						_enabledCheckers.Remove(checkBox.Text);
+
+					SaveConfig();
+				};
+			}
+
 			RestartMonitor();
 		}
 
@@ -183,7 +224,7 @@ namespace DirectoryFilesValidationGui
 			this.textBoxDir.Text = directory;
 			this.textBoxPattern.Text = pattern;
 
-			_scanner = new Scanner(directory, pattern, new CsprojChecker(), new EncodingChecker());
+			_scanner = new Scanner(directory, pattern, _enabledCheckers.Select(checkerId => _availableCheckers[checkerId]));
 			_scanner.Start(60000);
 		}
 
@@ -216,6 +257,9 @@ namespace DirectoryFilesValidationGui
 
 			config.AppSettings.Settings.Remove("Pattern");
 			config.AppSettings.Settings.Add("Pattern", textBoxPattern.Text);
+
+			config.AppSettings.Settings.Remove("EnabledCheckers");
+			config.AppSettings.Settings.Add("EnabledCheckers", string.Join("|", _enabledCheckers));
 
 			config.Save(ConfigurationSaveMode.Full);
 		}
